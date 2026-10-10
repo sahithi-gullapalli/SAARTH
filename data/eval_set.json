@@ -1,0 +1,6 @@
+[
+  {"question": "How many days of paid annual leave do employees get?", "ground_truth": "Employees receive 24 days of paid annual leave per year."},
+  {"question": "What is the probation period for new employees?", "ground_truth": "The probation period is 6 months."},
+  {"question": "Which agents does SAARTH use?", "ground_truth": "A planner, a tool agent, a retriever, a writer and a critic."},
+  {"question": "How large are the document chunks?", "ground_truth": "Chunks are 800 characters with 120 characters of overlap."}
+]
