@@ -22,7 +22,6 @@ from saarth.schemas import AgentStep, AskResponse, Citation, RetrievedChunk
 from saarth.text import sentences, tokens
 from saarth.tools import TOOL_SCHEMAS, detect_tool_calls, run_tool
 
-
 WRITER_SYSTEM = (
     "You are SAARTH, a helpful and precise AI assistant. "
     "Answer the user's specific question directly and concisely. "
@@ -136,10 +135,11 @@ class SaarthAgent:
 
         # General questions without retrieval should not be judged
         # against documents that were never retrieved.
-        if not state.get("needs_retrieval"):
-            score = 1.0
-        else:
-            score = grounding_score(state.get("answer", ""), evidence)
+        score = (
+             1.0
+             if not state.get("needs_retrieval")
+             else grounding_score(state.get("answer", ""), evidence)
+        )
 
         revise = bool(
             score < self.settings.grounding_threshold
