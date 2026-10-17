@@ -141,3 +141,52 @@ def test_api(monkeypatch: pytest.MonkeyPatch) -> None:
                                               "ground_truth": "The probation period is 6 months."}])
         assert ev.status_code == 200 and "summary" in ev.json()
     get_settings.cache_clear()
+
+
+def test_citations_only_reference_retrieved_chunks(agent: SaarthAgent) -> None:
+    r = agent.ask("How many days of paid annual leave do employees get?")
+    available_sources = len(agent.kb.search(
+        "How many days of paid annual leave do employees get?",
+        agent.settings.top_k,
+    ))
+    cited_indices = [c.index for c in r.citations]
+
+    assert all(1 <= index <= available_sources for index in cited_indices)
+    assert all(c.source for c in r.citations)
+
+def test_critic_retry_retrieves_again(settings: Settings) -> None:
+    kb = KnowledgeBase.from_settings(settings)
+    kb.ingest_directory()
+    agent = SaarthAgent(kb, llm=_HallucinatingLLM(), settings=settings)
+
+    result = agent.ask("Tell me about the leave policy")
+
+    agents = [step.agent for step in result.trace]
+    retriever_positions = [
+        i for i, name in enumerate(agents) if name == "retriever"
+    ]
+
+    assert len(retriever_positions) >= 2
+    assert result.revisions == settings.max_revisions
+    assert agents.count("critic") >= 2
+
+
+def test_retry_uses_wider_retrieval(settings: Settings) -> None:
+    kb = KnowledgeBase.from_settings(settings)
+    kb.ingest_directory()
+    agent = SaarthAgent(kb, llm=_HallucinatingLLM(), settings=settings)
+
+    result = agent.ask("Tell me about the leave policy")
+
+    retrieval_steps = [
+        step.detail for step in result.trace if step.agent == "retriever"
+    ]
+
+    assert len(retrieval_steps) >= 2
+    assert "k=" in retrieval_steps[0]
+    assert "k=" in retrieval_steps[1]
+
+    first_k = int(retrieval_steps[0].split("k=")[1].rstrip(")"))
+    second_k = int(retrieval_steps[1].split("k=")[1].rstrip(")"))
+
+    assert second_k > first_k

@@ -150,8 +150,13 @@ class OfflineLLM(BaseLLM):
                     overlap = len(q_tokens & set(tokens(s)))
                     if overlap >= max(1, min(2, len(q_tokens) // 3)):
                         scored.append((overlap / (len(tokens(s)) ** 0.3 + 1), f"{s} [{cite}]"))
+            
             scored.sort(key=lambda x: -x[0])
-            parts.extend(s for _, s in scored[:2])
+
+            # Keep only the best-matching sentence to avoid unrelated facts.
+            if scored:
+                parts.append(scored[0][1])
+
 
         if not parts:
             return LLMResponse(content="I don't have enough information in the knowledge base to answer that.")

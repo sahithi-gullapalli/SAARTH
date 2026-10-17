@@ -1,0 +1,52 @@
+{
+  "summary": {
+    "faithfulness": 1.0,
+    "answer_relevancy": 0.678,
+    "context_precision": 0.5,
+    "context_recall": 1.0,
+    "recall_at_k": 1.0,
+    "latency_ms": 5.165
+  },
+  "results": [
+    {
+      "question": "How many days of paid annual leave do employees get?",
+      "answer": "Employees receive 24 days of paid annual leave per calendar year. [1] Unused leave of up to 5 days can be carried over to the next year. [1]",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.714,
+      "context_precision": 0.5,
+      "context_recall": 1.0,
+      "latency_ms": 8.39,
+      "recall_at_k": 1.0
+    },
+    {
+      "question": "What is the probation period for new employees?",
+      "answer": "The probation period for new employees is 6 months. [1] Employees receive 24 days of paid annual leave per calendar year. [1]",
+      "faithfulness": 1.0,
+      "answer_relevancy": 1.0,
+      "context_precision": 0.5,
+      "context_recall": 1.0,
+      "latency_ms": 4.59,
+      "recall_at_k": 1.0
+    },
+    {
+      "question": "Which agents does SAARTH use?",
+      "answer": "SAARTH uses five agents orchestrated with LangGraph: a planner, a tool agent, a retriever, a writer and a critic. [1] SAARTH is a retrieval-augmented, multi-agent AI assistant. [1]",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.667,
+      "context_precision": 0.5,
+      "context_recall": 1.0,
+      "latency_ms": 3.49,
+      "recall_at_k": 1.0
+    },
+    {
+      "question": "How large are the document chunks?",
+      "answer": "Documents are split into overlapping chunks of 800 characters with an overlap of 120 characters. [1]",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.333,
+      "context_precision": 0.5,
+      "context_recall": 1.0,
+      "latency_ms": 4.19,
+      "recall_at_k": 1.0
+    }
+  ]
+}

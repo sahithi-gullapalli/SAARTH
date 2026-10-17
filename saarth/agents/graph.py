@@ -22,16 +22,19 @@ from saarth.schemas import AgentStep, AskResponse, Citation, RetrievedChunk
 from saarth.text import sentences, tokens
 from saarth.tools import TOOL_SCHEMAS, detect_tool_calls, run_tool
 
+
 WRITER_SYSTEM = (
-    "You are SAARTH, a helpful general-purpose AI assistant. "
-    "Answer the user's question clearly and accurately using your general knowledge "
-    "and any relevant numbered context or tool results provided. "
-    "When you use information from numbered context, cite the relevant source "
-    "using its number, like [1]. Do not invent citations. "
-    "If no relevant context is available, answer normally without citations. "
-    "If the question requires information you do not know, say so honestly. "
-    "Be concise but helpful."
+    "You are SAARTH, a helpful and precise AI assistant. "
+    "Answer the user's specific question directly and concisely. "
+    "Use relevant numbered context and tool results when available. "
+    "Do not add unrelated facts merely because they appear in the context. "
+    "When using numbered context, cite each factual claim with its source "
+    "number, like [1]. Never invent citations or source information. "
+    "If the context does not contain the answer, say so honestly. "
+    "For general questions, use your general knowledge when appropriate. "
+    "Keep the answer focused on exactly what the user asked."
 )
+
 TOOL_SYSTEM = "Decide whether any tool is needed to answer the user. Call tools only when useful."
 REFUSAL = "don't have enough information"
 _TOOL_WORDS = {"calculate", "compute", "time", "date", "current", "today", "now", "utc", "plus", "times"}
@@ -124,16 +127,41 @@ class SaarthAgent:
                                     Message(role="user", content=prompt)]).content.strip()
         return {"answer": answer, "trace": self._log(state, "writer", f"{len(answer)} chars drafted")}
 
+    
     def critic(self, state: AgentState) -> AgentState:
-        evidence = [c["text"] for c in state.get("contexts", [])] + [r["output"] for r in state.get("tool_results", [])]
-        score = grounding_score(state.get("answer", ""), evidence)
-        revise = bool(score < self.settings.grounding_threshold and state.get("needs_retrieval")
-                      and state.get("revisions", 0) < self.settings.max_revisions)
-        update: AgentState = {"grounding_score": score, "revise": revise,
-                              "trace": self._log(state, "critic", f"grounding={score} -> {'revise' if revise else 'accept'}")}
+        evidence = (
+            [c["text"] for c in state.get("contexts", [])]
+            + [r["output"] for r in state.get("tool_results", [])]
+        )
+
+        # General questions without retrieval should not be judged
+        # against documents that were never retrieved.
+        if not state.get("needs_retrieval"):
+            score = 1.0
+        else:
+            score = grounding_score(state.get("answer", ""), evidence)
+
+        revise = bool(
+            score < self.settings.grounding_threshold
+            and state.get("needs_retrieval")
+            and state.get("revisions", 0) < self.settings.max_revisions
+        )
+
+        update: AgentState = {
+            "grounding_score": score,
+            "revise": revise,
+            "trace": self._log(
+                state,
+                "critic",
+                f"grounding={score} -> {'revise' if revise else 'accept'}",
+            ),
+        }
+
         if revise:
             update["revisions"] = state.get("revisions", 0) + 1
+
         return update
+
 
     # ---------- graph ----------
     def _build(self) -> Any:

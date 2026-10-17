@@ -55,6 +55,7 @@ class EvalSample(BaseModel):
     ground_truth: str
 
 
+
 class EvalResult(BaseModel):
     question: str
     answer: str
@@ -62,3 +63,6 @@ class EvalResult(BaseModel):
     answer_relevancy: float
     context_precision: float
     context_recall: float
+    latency_ms: float = 0.0
+    recall_at_k: float = 0.0
+

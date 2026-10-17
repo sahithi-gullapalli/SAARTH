@@ -44,7 +44,9 @@ def main() -> None:
         from saarth.schemas import EvalSample
 
         samples = [EvalSample(**s) for s in json.loads(Path(args.file).read_text(encoding="utf-8"))]
-        print(json.dumps(evaluate(agent, samples)["summary"], indent=2))
+        report = evaluate(agent, samples)
+        print(json.dumps(report, indent=2, ensure_ascii=False))
+
 
 
 if __name__ == "__main__":
